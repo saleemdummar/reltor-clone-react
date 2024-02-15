@@ -16,7 +16,7 @@ import { getAuth } from "firebase/auth";
 export default function CreateListing() {
   const navigate = useNavigate();
   const auth = getAuth();
-  const [geoLocationEnabled, setGeoLocationEnabled] = useState(true);
+  const [geoLocationEnabled, setGeoLocationEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: "rent",
@@ -156,6 +156,7 @@ export default function CreateListing() {
       imgUrls,
       geoLocation,
       timeStamp: serverTimestamp(),
+      userRef: auth.currentUser.uid,
     };
 
     delete formDataCopy.images;

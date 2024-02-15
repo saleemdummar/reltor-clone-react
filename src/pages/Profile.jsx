@@ -1,15 +1,26 @@
 import { getAuth, updateProfile } from "firebase/auth";
 import { Link, useNavigate } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { doc, updateDoc } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  collection,
+  query,
+  where,
+  orderBy,
+  getDocs,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import { FcHome } from "react-icons/fc";
+import ListingItem from "../components/ListingItem";
 
 export default function Profile() {
   const auth = getAuth();
   const navigate = useNavigate();
   const [changeDetail, setChangeDetatil] = useState(false);
+  const [listings, setListings] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: auth.currentUser.displayName,
     email: auth.currentUser.email,
@@ -44,6 +55,33 @@ export default function Profile() {
       toast.error("Something went wrong Could not update the profile detail");
     }
   }
+  // Here we will use the useEffect hook to fetch the data from the server
+  // once the profile page is loaded
+  useEffect(() => {
+    // as the data is coming from the server we will make the async function inside the useEffect beacuse
+    // we cann't make the arrow function async in the above useeffect
+    const fetchUserListings = async () => {
+      const listingRef = collection(db, "listings");
+      const q = query(
+        listingRef,
+        where("userRef", "==", auth.currentUser.uid),
+        orderBy("timeStamp", "desc")
+      );
+      //  after the query we will get the documents
+      const querySnap = await getDocs(q);
+      // now we will make empty array and loop through the querySnap to add the data to the listing variable
+      let listings = [];
+      querySnap.forEach((doc) => {
+        return listings.push({
+          id: doc.id,
+          data: doc.data(),
+        });
+      });
+      setListings(listings);
+      setLoading(false);
+    };
+    fetchUserListings();
+  }, [auth.currentUser.uid]); // the empty bracket means to run the useEffect once
   return (
     <>
       <section className='max-w-6xl mx-auto flex justify-center items-center flex-col'>
@@ -104,6 +142,22 @@ export default function Profile() {
           </button>
         </div>
       </section>
+      <div className='max-w-6xl px-3 mt-6 mx-auto'>
+        {!loading && listings.length > 0 && (
+          <>
+            <h2 className='text-2xl text-center font-semibold'>My Listings</h2>
+            <ul>
+              {listings.map((listing) => (
+                <ListingItem
+                  key={listing.id}
+                  id={listing.id}
+                  listing={listing.data}
+                />
+              ))}
+            </ul>
+          </>
+        )}
+      </div>
     </>
   );
 }
