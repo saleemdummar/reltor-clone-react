@@ -1,8 +1,9 @@
 import Moment from "react-moment";
 import { Link } from "react-router-dom";
-import { MdLocationOn } from "react-icons/md";
+import { MdLocationOn, MdEdit } from "react-icons/md";
+import { FaTrash } from "react-icons/fa";
 
-export default function ListingItem({ listing, id }) {
+export default function ListingItem({ listing, id, onDelete, onEdit }) {
   return (
     <li
       className='relative bg-white flex flex-col justify-between items-center shadow-md
@@ -13,7 +14,7 @@ export default function ListingItem({ listing, id }) {
          transition-scale duration-200 ease-in'
           loading='lazy'
           src={listing.imgUrls[0]}
-          alt='Image of the property'
+          alt='property'
         />
         <Moment
           className='absolute top-2 left-2 bg-[#3377cc] text-white uppercase text-xs font-semibold rounded-md px-2 py-1 shadow-lg'
@@ -55,6 +56,18 @@ export default function ListingItem({ listing, id }) {
           </div>
         </div>
       </Link>
+      {onDelete && (
+        <FaTrash
+          className='absolute bottom-2 right-2 h-[14px] cursor-pointer text-red-500'
+          onClick={() => onDelete(listing.id)}
+        />
+      )}
+      {onEdit && (
+        <MdEdit
+          className='absolute bottom-2 right-8 h-4 cursor-pointer text-green-500'
+          onClick={() => onEdit(listing.id)}
+        />
+      )}
     </li>
   );
 }

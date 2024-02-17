@@ -10,6 +10,7 @@ import {
   where,
   orderBy,
   getDocs,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import { FcHome } from "react-icons/fc";
@@ -82,6 +83,23 @@ export default function Profile() {
     };
     fetchUserListings();
   }, [auth.currentUser.uid]); // the empty bracket means to run the useEffect once
+
+  async function onDelete(listingID) {
+    if (window.confirm("Are You Sure To Delete?")) {
+      //  here we will delete the item from the doc
+      await deleteDoc(doc(db, "listings", listingID));
+      // here we will filter the deleted item
+      const updatedListings = listings.filter(
+        (listing) => listing.id !== listingID
+      );
+      // after deleting from the doc we have to update the state as well
+      setListings(updatedListings);
+      toast.success("Successfully Updated the listings");
+    }
+  }
+  function onEdit(listingID) {
+    navigate(`/edit-listing/${listingID}`);
+  }
   return (
     <>
       <section className='max-w-6xl mx-auto flex justify-center items-center flex-col'>
@@ -154,6 +172,8 @@ export default function Profile() {
                   key={listing.id}
                   id={listing.id}
                   listing={listing.data}
+                  onDelete={() => onDelete(listing.id)}
+                  onEdit={() => onEdit(listing.id)}
                 />
               ))}
             </ul>
